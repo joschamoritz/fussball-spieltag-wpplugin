@@ -1,0 +1,32 @@
+# Abhängigkeiten
+/vendor/
+/node_modules/
+
+# Build-Artefakte
+*.zip
+*.tar.gz
+
+# Betriebssystem
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE / Editor
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+# WordPress
+wp-config.php
+wp-content/uploads/
+
+# Logs
+*.log
+error_log
+
+# Eigene Projektdateien (nicht für die Öffentlichkeit)
+prompt-plugin-github.md
+svh-website-projektwissen.md
