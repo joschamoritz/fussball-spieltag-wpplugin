@@ -25,7 +25,7 @@ Ein WordPress-Plugin für Fußballvereine, die ihre Spieltagsdaten von **fussbal
 
 ### Option A – ZIP hochladen (empfohlen)
 
-1. Auf der [Releases-Seite](https://github.com/joschamoritz/fussball-spieltag-wpplugin/releases) die aktuelle ZIP-Datei herunterladen
+1. Auf GitHub oben rechts auf **Code → Download ZIP** klicken
 2. Im WordPress-Backend: **Plugins → Neu hinzufügen → Plugin hochladen**
 3. ZIP auswählen und installieren
 4. Plugin aktivieren
