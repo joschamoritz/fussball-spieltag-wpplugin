@@ -5,6 +5,28 @@ Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.0.0
 
 ---
 
+## [5.1.0] – 2026-03-16
+
+### Performance & Stabilität
+- **In-Process-Cache** in `api.php`: Wiederholte API-Aufrufe innerhalb desselben Seitenaufrufs werden nicht mehr doppelt ausgeführt (statische Variable)
+- **Negativer Transient-Cache** in `api.php`: API-Fehler (Verbindung, HTTP-Status, ungültiges JSON) werden 2 Minuten gecacht – verhindert Hammering bei Serverausfällen
+- **Logo-Timeout** in `helpers.php`: Reduziert von 10 s auf 3 s – fehlerhafte Logo-Downloads blockieren das Frontend nicht mehr lange
+- **Failed-Marker** für Logos: Fehlgeschlagene Logo-Downloads werden markiert (`__failed__`) – kein erneuter Versuch bis Cache geleert wird
+
+### Admin
+- **Auto Cache Flush**: API-Cache wird automatisch geleert wenn `fsw_team_ids` oder `fsw_club_id` im Backend geändert werden (kein manuelles Cache leeren nötig)
+
+### Frontend (v5.0.x)
+- Externes Tab-Script `assets/tabs.js` ersetzt Inline-`<script>` – Arrow-Key-Navigation, cachebar, mehrere Widgets pro Seite möglich
+- Admin Color Picker mit Live-Preview via CSS Custom Properties
+- `color-mix()` ersetzt durch server-seitig berechnete `rgba()`-Variablen (`--fsw-primary-faint`, `--fsw-primary-faint2`) für bessere Browser-Kompatibilität
+- `width`/`height`-Attribute auf allen Logo- und Icon-`<img>`-Tags (CLS-Prävention)
+- `.fsw-err` jetzt sichtbar als rote Fehlermeldung
+- Tabellen-Scroll auf kleinen Bildschirmen (`overflow-x: auto`)
+- `@media (max-width: 380px)`: U/Tore/Diff-Spalten ausgeblendet
+
+---
+
 ## [5.0.0] – 2025
 
 ### Neu

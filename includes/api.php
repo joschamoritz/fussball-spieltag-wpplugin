@@ -16,12 +16,23 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * @return array|WP_Error  Dekodierte JSON-Response oder WP_Error.
  */
 function fsw_api( $ep ) {
+	static $mem = [];   // In-Process-Cache: verhindert Doppel-Requests innerhalb eines Seitenaufrufs
+
 	$tok = get_option( 'fsw_api_token', '' );
 	if ( ! $tok ) return new WP_Error( 'no_token', 'API-Token fehlt. Einstellungen → Fussball Spieltag Widget.' );
 
 	$key = 'fsw_' . md5( $ep );
-	$c   = get_transient( $key );
-	if ( false !== $c ) return $c;
+
+	// 1. In-Process-Cache (selber Seitenaufruf)
+	if ( isset( $mem[ $key ] ) ) return $mem[ $key ];
+
+	// 2. Transient-Cache (positiv + negativ)
+	$c = get_transient( $key );
+	if ( false !== $c ) {
+		// '__error__' = negativer Cache: API war bei letztem Versuch nicht erreichbar
+		if ( '__error__' === $c ) return new WP_Error( 'cached', 'API momentan nicht erreichbar.' );
+		return $mem[ $key ] = $c;
+	}
 
 	$url  = rtrim( get_option( 'fsw_api_base', 'https://api-fussball.de/api' ), '/' ) . $ep;
 	$args = [ 'timeout' => 15, 'headers' => [ 'x-auth-token' => $tok ] ];
@@ -36,16 +47,23 @@ function fsw_api( $ep ) {
 		$r = wp_remote_get( $alt, $args );
 	}
 
-	if ( is_wp_error( $r ) ) return new WP_Error( 'api', 'Verbindung: ' . $r->get_error_message() );
+	if ( is_wp_error( $r ) ) {
+		set_transient( $key, '__error__', 120 );   // Fehler 2 Minuten negativ cachen
+		return new WP_Error( 'api', 'Verbindung: ' . $r->get_error_message() );
+	}
 	if ( wp_remote_retrieve_response_code( $r ) !== 200 ) {
+		set_transient( $key, '__error__', 120 );
 		return new WP_Error( 'api', 'HTTP ' . wp_remote_retrieve_response_code( $r ) );
 	}
 
 	$d = json_decode( wp_remote_retrieve_body( $r ), true );
-	if ( ! is_array( $d ) ) return new WP_Error( 'json', 'Ungültige API-Antwort.' );
+	if ( ! is_array( $d ) ) {
+		set_transient( $key, '__error__', 120 );
+		return new WP_Error( 'json', 'Ungültige API-Antwort.' );
+	}
 
 	set_transient( $key, $d, FSW_CACHE );
-	return $d;
+	return $mem[ $key ] = $d;
 }
 
 /**

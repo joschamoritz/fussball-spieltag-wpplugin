@@ -223,6 +223,10 @@ function fsw_settings_page() {
 	<?php
 }
 
+// API-Cache automatisch leeren wenn relevante Einstellungen geändert werden
+add_action( 'update_option_fsw_team_ids', 'fsw_clear_cache' );
+add_action( 'update_option_fsw_club_id',  'fsw_clear_cache' );
+
 // Admin-Bar-Eintrag
 add_action( 'admin_bar_menu', function ( $b ) {
 	if ( ! current_user_can( 'manage_options' ) ) return;

@@ -168,10 +168,16 @@ function fsw_cached_logo_url( $remote_url ) {
 	if ( empty( $remote_url ) ) return '';
 	$cache_key = 'fsw_logo_' . md5( $remote_url );
 	$local_url = get_option( $cache_key );
-	if ( $local_url ) return $local_url;
+	if ( $local_url ) {
+		// '__failed__' = vorheriger Download fehlgeschlagen → Remote-URL als Fallback
+		if ( '__failed__' === $local_url ) return $remote_url;
+		return $local_url;
+	}
 
-	$response = wp_remote_get( $remote_url, [ 'timeout' => 10 ] );
+	$response = wp_remote_get( $remote_url, [ 'timeout' => 3 ] );
 	if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
+		// Fehlgeschlagenen Download markieren → kein erneuter Versuch bis Cache geleert wird
+		update_option( $cache_key, '__failed__', false );
 		return $remote_url;
 	}
 

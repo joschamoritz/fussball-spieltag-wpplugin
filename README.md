@@ -156,6 +156,21 @@ Das Plugin lädt standardmäßig **Oswald** und **Source Sans 3** von Google Fon
 
 ---
 
+## Hinweis: Logo-Caching in der Mediathek
+
+Das Plugin lädt Vereinslogos von fussball.de **einmalig** herunter und speichert sie lokal in der WordPress-Mediathek – das verhindert externe Anfragen vom Browser eurer Besucher und beschleunigt das Widget.
+
+**Was das bedeutet:**
+- Pro Gegner-Logo wird **eine Datei in eurer Mediathek** angelegt (`fsw-logo-xxxxxxxx.png/jpg/svg`).
+- Je nach Anzahl verschiedener Gegner können das schnell **20–50 Dateien** (oder mehr) werden.
+- Die Logos sind in der Mediathek unter **Medien → Bibliothek** sichtbar und können dort bei Bedarf gelöscht werden.
+- Beim **Cache leeren** (Einstellungen → Spieltag Widget → Cache leeren) werden die Datenbank-Einträge gelöscht, **nicht** die Dateien selbst – die Logos müssen bei Bedarf manuell aus der Mediathek entfernt werden.
+
+**Wenn ihr das nicht möchtet:**
+Ihr könnt in den Plugin-Einstellungen unter **Vereinseinstellungen → Eigenes Vereinslogo** ausschließlich ein eigenes Logo eintragen und die API-Logos dadurch ersetzen. Eine vollständige Deaktivierung des Logo-Cachings ist in der aktuellen Version nicht vorgesehen.
+
+---
+
 ## FAQ
 
 **Was ist api-fussball.de?**
