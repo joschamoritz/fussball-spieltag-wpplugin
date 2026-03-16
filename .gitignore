@@ -30,3 +30,6 @@ error_log
 # Eigene Projektdateien (nicht für die Öffentlichkeit)
 prompt-plugin-github.md
 svh-website-projektwissen.md
+
+# Claude Code
+.claude/
