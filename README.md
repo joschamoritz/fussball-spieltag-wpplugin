@@ -129,7 +129,6 @@ Alle Shortcodes unterstützen folgende optionale Parameter:
 ```
 [fsw_naechstes_spiel team="011MIA6VDK000000VTVG0001VTR8C1K7"]
 [fsw_tabelle style="box" rows="7"]
-[fsw_spieltag_tabs jugend_url="/junioren/"]
 [fsw_spielplan anzahl="8" filter="junioren"]
 ```
 
@@ -161,7 +160,7 @@ Das Plugin lädt standardmäßig **Oswald** und **Source Sans 3** von Google Fon
 Das Plugin lädt Vereinslogos von fussball.de **einmalig** herunter und speichert sie lokal in der WordPress-Mediathek – das verhindert externe Anfragen vom Browser eurer Besucher und beschleunigt das Widget.
 
 **Was das bedeutet:**
-- Pro Gegner-Logo wird **eine Datei in eurer Mediathek** angelegt (`fsw-logo-xxxxxxxx.png/jpg/svg`).
+- Pro Gegner-Logo wird **eine Datei in eurer Mediathek** angelegt (`fsw-logo-xxxxxxxx.png/jpg/gif`).
 - Je nach Anzahl verschiedener Gegner können das schnell **20–50 Dateien** (oder mehr) werden.
 - Die Logos sind in der Mediathek unter **Medien → Bibliothek** sichtbar und können dort bei Bedarf gelöscht werden.
 - Beim **Cache leeren** (Einstellungen → Spieltag Widget → Cache leeren) werden die Datenbank-Einträge gelöscht, **nicht** die Dateien selbst – die Logos müssen bei Bedarf manuell aus der Mediathek entfernt werden.
