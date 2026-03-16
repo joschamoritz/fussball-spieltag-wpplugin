@@ -91,7 +91,7 @@
 	display: flex;
 	align-items: center;
 	gap: 16px;
-	margin: 0 0 20px;
+	margin: 8px 0 20px;
 	padding: 0 4px;
 }
 .fsw-section-title::before,
@@ -263,7 +263,7 @@
 /* ═══ Formkurve: Gievenbeck-Stil (Linien-Diagramm) ═══ */
 
 .fsw-formchart {
-	padding: 8px 0;
+	padding: 0 0 8px;
 }
 .fsw-fc-graph {
 	display: flex;

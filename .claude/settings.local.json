@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(del \"C:\\\\Users\\\\Joscha Moritz\\\\OneDrive\\\\SV Hochlar 28\\\\Produktion\\\\Website\\\\Plugin_Spieltag\\\\svh-spieltag.php\")"
-    ]
-  }
-}
