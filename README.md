@@ -30,6 +30,10 @@ Ein WordPress-Plugin für Fußballvereine, die ihre Spieltagsdaten von **fussbal
 3. ZIP auswählen und installieren
 4. Plugin aktivieren
 
+### Update
+
+Plugin deaktivieren, neue ZIP hochladen, wieder aktivieren – alle Einstellungen (API-Token, Team-IDs, Farben) bleiben erhalten. Erst beim **Löschen** des Plugins werden die Daten entfernt.
+
 ### Option B – Manuell per FTP
 
 1. Dieses Repository als ZIP herunterladen oder klonen
