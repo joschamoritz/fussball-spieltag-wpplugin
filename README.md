@@ -208,7 +208,7 @@ Das Plugin ist so gebaut, dass möglichst wenig externe Verbindungen entstehen:
 - **Keine Tracking-Skripte** – es werden keine Analyse- oder Werbe-Tools eingebunden.
 - **API-Anfragen serverseitig** – alle Anfragen an api-fussball.de laufen über euren WordPress-Server, nicht über den Browser eurer Besucher. Besucher haben keinen direkten Kontakt zur API.
 - **Logos lokal gecacht** – Vereinslogos werden einmalig serverseitig von fussball.de heruntergeladen und in eurer Mediathek gespeichert. Danach werden sie von eurer eigenen Domain ausgeliefert.
-- **Google Fonts (optional)** – Wenn Google Fonts aktiviert sind (Standardeinstellung), lädt der Browser eurer Besucher die Schriften direkt von Googles Servern. Dabei wird die IP-Adresse des Besuchers an Google übermittelt. Wer das vermeiden möchte, kann Google Fonts unter **Einstellungen → Spieltag Widget → Darstellung** deaktivieren.
+- **Google Fonts (optional)** – Wenn Google Fonts aktiviert sind (Standardeinstellung), lädt der Browser eurer Besucher die Schriften direkt von Googles Servern. Dabei wird die IP-Adresse des Besuchers an Google übermittelt. **Empfehlung:** Fonts lokal hosten (z.B. mit dem Plugin [OMGF | Host Google Fonts Locally](https://wordpress.org/plugins/host-webfonts-local/)) und Google Fonts im Plugin unter **Einstellungen → Spieltag Widget → Darstellung** deaktivieren – dann gibt es keinerlei externe Verbindungen mehr.
 
 ---
 
