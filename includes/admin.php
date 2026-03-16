@@ -145,18 +145,18 @@ add_action( 'admin_init', function () {
  * Rendert die Admin-Einstellungsseite.
  */
 function fsw_settings_page() {
-	// Cache leeren (mit Nonce-Schutz gegen CSRF)
+	// Cache leeren (mit Nonce-Schutz gegen CSRF) – I7: eigener Nonce-Parameter
 	if ( isset( $_GET['fsw_clear'] ) && current_user_can( 'manage_options' ) ) {
-		if ( ! isset( $_GET['_fsw_nonce'] ) || ! wp_verify_nonce( $_GET['_fsw_nonce'], 'fsw_clear_cache' ) ) {
+		if ( ! isset( $_GET['_fsw_nonce_clear'] ) || ! wp_verify_nonce( $_GET['_fsw_nonce_clear'], 'fsw_clear_cache' ) ) {
 			wp_die( 'Sicherheitsprüfung fehlgeschlagen.' );
 		}
 		fsw_clear_cache();
 		fsw_clear_logo_cache();
 	}
 
-	// Debug-Ansicht (mit Nonce-Schutz)
+	// Debug-Ansicht (mit Nonce-Schutz) – I7: eigener Nonce-Parameter
 	$debug = isset( $_GET['fsw_debug'] ) && current_user_can( 'manage_options' );
-	if ( $debug && ( ! isset( $_GET['_fsw_nonce'] ) || ! wp_verify_nonce( $_GET['_fsw_nonce'], 'fsw_debug_api' ) ) ) {
+	if ( $debug && ( ! isset( $_GET['_fsw_nonce_debug'] ) || ! wp_verify_nonce( $_GET['_fsw_nonce_debug'], 'fsw_debug_api' ) ) ) {
 		$debug = false;
 	}
 	?>
@@ -196,19 +196,19 @@ function fsw_settings_page() {
 
 	<hr>
 	<h2>Cache &amp; Debug</h2>
-	<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'fsw_clear', '1' ), 'fsw_clear_cache', '_fsw_nonce' ) ); ?>" class="button">
+	<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'fsw_clear', '1' ), 'fsw_clear_cache', '_fsw_nonce_clear' ) ); ?>" class="button">
 		Cache leeren (API + Logos)
 	</a>
 	<?php if ( isset( $_GET['fsw_clear'] ) ) : ?>
 		<span style="color:green;margin-left:8px">✓ API-Cache + Logo-Cache geleert</span>
 	<?php endif; ?>
 	&nbsp;
-	<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'fsw_debug', '1' ), 'fsw_debug_api', '_fsw_nonce' ) ); ?>" class="button">
+	<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'fsw_debug', '1' ), 'fsw_debug_api', '_fsw_nonce_debug' ) ); ?>" class="button">
 		API-Debug
 	</a>
 	<?php
 	if ( $debug ) {
-		fsw_clear_cache();
+		// I6: Cache wird im Debug-Modus NICHT mehr geleert – kein Einfluss auf Frontendbesucher
 		$tid = fsw_tid();
 		foreach ( [ 'next_games', 'prev_games', 'table' ] as $ep ) {
 			echo '<h4>' . esc_html( $ep ) . '</h4>';
@@ -224,8 +224,9 @@ function fsw_settings_page() {
 }
 
 // API-Cache automatisch leeren wenn relevante Einstellungen geändert werden
-add_action( 'update_option_fsw_team_ids', 'fsw_clear_cache' );
-add_action( 'update_option_fsw_club_id',  'fsw_clear_cache' );
+add_action( 'update_option_fsw_team_ids',  'fsw_clear_cache' );
+add_action( 'update_option_fsw_club_id',   'fsw_clear_cache' );
+add_action( 'update_option_fsw_api_token', 'fsw_clear_cache' );  // C3: Cache bei Token-Wechsel leeren
 
 // Admin-Bar-Eintrag
 add_action( 'admin_bar_menu', function ( $b ) {

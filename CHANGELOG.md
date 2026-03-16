@@ -5,6 +5,31 @@ Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.0.0
 
 ---
 
+## [5.2.0] – 2026-03-16
+
+### Sicherheit
+- **[C1] SVG-Logos abgelehnt**: SVG-Dateien werden nicht mehr in die Mediathek heruntergeladen (potenzielles XSS)
+- **[C1] WP_Filesystem**: Logo-Download schreibt jetzt via `WP_Filesystem` statt `file_put_contents` (Kompatibilität mit gehärteten Hosts)
+- **[C2] MIME-Typ-Validierung**: Echter Dateiinhalt via `finfo` geprüft, nicht der HTTP-`Content-Type`-Header
+- **[C3] Cache-Flush bei Token-Wechsel**: `update_option_fsw_api_token` löst automatisch `fsw_clear_cache()` aus
+- **[I7] Separate Nonce-Parameter**: Cache-Leeren (`_fsw_nonce_clear`) und Debug (`_fsw_nonce_debug`) verwenden getrennte Parameter
+
+### Performance & Stabilität
+- **[I1] Response-Größen-Limit**: Logo-Downloads auf 512 KB begrenzt – kein RAM-Erschöpfungsrisiko mehr
+- **[I2] Asynchrone Logo-Downloads**: Logos werden jetzt per WP-Cron im Hintergrund geladen, kein TTFB-Block mehr beim ersten Seitenaufruf
+- **[I5] Input-Validierung**: `fsw_adjust_brightness()` und `fsw_hex_to_rgba()` prüfen Hex-Input via `ctype_xdigit()` vor der Verarbeitung
+
+### Admin
+- **[I6] Debug-Ansicht leert Cache nicht mehr**: Kein unbeabsichtigter Cache-Clear für Frontendbesucher beim Öffnen der Debug-Ansicht
+
+### Shortcodes
+- **[I3] Early Return bei fehlender Team-ID**: `[fsw_naechstes_spiel]` und `[fsw_tabelle]` zeigen sofort eine klare Fehlermeldung statt einen unnötigen API-Request zu machen
+
+### Deinstallation
+- **[I4] Mediathek aufräumen**: `uninstall.php` löscht jetzt auch die Mediathek-Anhänge (wp_posts-Einträge + physische Dateien) der gecachten Logos
+
+---
+
 ## [5.1.0] – 2026-03-16
 
 ### Performance & Stabilität

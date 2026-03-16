@@ -91,6 +91,7 @@ function fsw_render_match( $opts ) {
 function fsw_next_sc( $atts ) {
 	$atts = shortcode_atts( [ 'team' => '', 'style' => '' ], $atts );
 	$tid  = fsw_tid( $atts['team'] );
+	if ( ! $tid ) return fsw_err( 'Keine Team-ID konfiguriert. Einstellungen → Spieltag Widget.' );
 	$d    = fsw_api( '/team/next_games/' . $tid );
 	if ( is_wp_error( $d ) ) return fsw_err( $d->get_error_message() );
 	$gs = fsw_data( $d );
@@ -375,7 +376,9 @@ add_shortcode( 'fsw_formkurve', 'fsw_form_sc' );
  */
 function fsw_table_sc( $atts ) {
 	$atts = shortcode_atts( [ 'team' => '', 'full' => '0', 'rows' => 5, 'style' => '', 'title' => '1' ], $atts );
-	$d    = fsw_api( '/team/table/' . fsw_tid( $atts['team'] ) );
+	$tid  = fsw_tid( $atts['team'] );
+	if ( ! $tid ) return fsw_err( 'Keine Team-ID konfiguriert. Einstellungen → Spieltag Widget.' );
+	$d    = fsw_api( '/team/table/' . $tid );
 	if ( is_wp_error( $d ) ) return fsw_err( $d->get_error_message() );
 	$rows = fsw_data( $d );
 	if ( empty( $rows ) ) return fsw_err( 'Keine Tabelle.' );

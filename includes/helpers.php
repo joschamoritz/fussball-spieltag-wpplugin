@@ -133,6 +133,7 @@ function fsw_adjust_brightness( $hex, $amount ) {
 	if ( strlen( $hex ) === 3 ) {
 		$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
 	}
+	if ( strlen( $hex ) !== 6 || ! ctype_xdigit( $hex ) ) return '#000000';
 	$r = max( 0, min( 255, hexdec( substr( $hex, 0, 2 ) ) + $amount ) );
 	$g = max( 0, min( 255, hexdec( substr( $hex, 2, 2 ) ) + $amount ) );
 	$b = max( 0, min( 255, hexdec( substr( $hex, 4, 2 ) ) + $amount ) );
@@ -151,6 +152,7 @@ function fsw_hex_to_rgba( $hex, $alpha = 1.0 ) {
 	if ( strlen( $hex ) === 3 ) {
 		$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
 	}
+	if ( strlen( $hex ) !== 6 || ! ctype_xdigit( $hex ) ) return 'rgba(0,0,0,1)';
 	$r = hexdec( substr( $hex, 0, 2 ) );
 	$g = hexdec( substr( $hex, 2, 2 ) );
 	$b = hexdec( substr( $hex, 4, 2 ) );
@@ -158,11 +160,12 @@ function fsw_hex_to_rgba( $hex, $alpha = 1.0 ) {
 }
 
 /**
- * Lädt ein externes Logo einmalig herunter und speichert es in der WordPress-Mediathek.
- * Verhindert externe fussball.de-Requests vom Browser des Besuchers.
+ * Gibt die lokale URL eines gecachten Logos zurück.
+ * Beim ersten Aufruf wird ein asynchroner Download per WP-Cron eingeplant (I2: kein TTFB-Block).
+ * Bis der Cron-Job läuft wird die Remote-URL als Fallback zurückgegeben.
  *
  * @param  string $remote_url URL des externen Logos.
- * @return string             Lokale URL des gecachten Logos oder die Remote-URL als Fallback.
+ * @return string             Lokale URL des gecachten Logos oder Remote-URL als Fallback.
  */
 function fsw_cached_logo_url( $remote_url ) {
 	if ( empty( $remote_url ) ) return '';
@@ -174,31 +177,76 @@ function fsw_cached_logo_url( $remote_url ) {
 		return $local_url;
 	}
 
-	$response = wp_remote_get( $remote_url, [ 'timeout' => 3 ] );
-	if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
-		// Fehlgeschlagenen Download markieren → kein erneuter Versuch bis Cache geleert wird
-		update_option( $cache_key, '__failed__', false );
-		return $remote_url;
+	// Noch kein gecachtes Logo → Download asynchron per WP-Cron einplanen
+	if ( ! wp_next_scheduled( 'fsw_download_logo', [ $remote_url ] ) ) {
+		wp_schedule_single_event( time(), 'fsw_download_logo', [ $remote_url ] );
 	}
 
-	$image_data   = wp_remote_retrieve_body( $response );
-	$content_type = wp_remote_retrieve_header( $response, 'content-type' );
-	if      ( strpos( $content_type, 'png' ) !== false ) $ext = 'png';
-	elseif  ( strpos( $content_type, 'gif' ) !== false ) $ext = 'gif';
-	elseif  ( strpos( $content_type, 'svg' ) !== false ) $ext = 'svg';
-	else                                                  $ext = 'jpg';
+	return $remote_url;   // Einstweilen Remote-URL als Fallback zurückgeben
+}
 
-	$filename   = 'fsw-logo-' . substr( md5( $remote_url ), 0, 8 ) . '.' . $ext;
+/**
+ * Führt den Logo-Download durch – wird ausschließlich per WP-Cron aufgerufen.
+ * Prüft MIME-Typ anhand des Dateiinhalts (C2), lehnt SVG ab (C1),
+ * begrenzt die Dateigröße auf 512 KB (I1) und schreibt via WP_Filesystem (C1).
+ *
+ * @param  string $remote_url URL des externen Logos.
+ * @return void
+ */
+function fsw_do_logo_download( $remote_url ) {
+	if ( empty( $remote_url ) ) return;
+	$cache_key = 'fsw_logo_' . md5( $remote_url );
+	if ( get_option( $cache_key ) ) return;   // Inzwischen schon gecacht
+
+	$response = wp_remote_get( $remote_url, [
+		'timeout'             => 10,          // Im Cron-Kontext kein TTFB-Problem
+		'limit_response_size' => 512 * 1024,  // I1: max. 512 KB
+	] );
+	if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
+		update_option( $cache_key, '__failed__', false );
+		return;
+	}
+
+	$image_data = wp_remote_retrieve_body( $response );
+
+	// C2: MIME-Typ aus dem echten Dateiinhalt ermitteln, nicht aus dem HTTP-Header
+	$allowed = [ 'image/png' => 'png', 'image/jpeg' => 'jpg', 'image/gif' => 'gif' ];
+	if ( function_exists( 'finfo_buffer' ) ) {
+		$finfo     = new finfo( FILEINFO_MIME_TYPE );
+		$real_mime = $finfo->buffer( $image_data );
+	} else {
+		// Fallback wenn finfo fehlt: Content-Type-Header mit Whitelist (SVG ausgeschlossen)
+		$ct        = wp_remote_retrieve_header( $response, 'content-type' );
+		$real_mime = strtok( $ct, ';' );
+	}
+
+	// C1: SVG und alle nicht erlaubten Typen ablehnen
+	if ( ! isset( $allowed[ $real_mime ] ) ) {
+		update_option( $cache_key, '__failed__', false );
+		return;
+	}
+	$ext = $allowed[ $real_mime ];
+
+	$filename   = sanitize_file_name( 'fsw-logo-' . substr( md5( $remote_url ), 0, 8 ) . '.' . $ext );
 	$upload_dir = wp_upload_dir();
-	$file_path  = $upload_dir['path'] . '/' . $filename;
-	$file_url   = $upload_dir['url']  . '/' . $filename;
+	$file_path  = trailingslashit( $upload_dir['path'] ) . $filename;
+	$file_url   = trailingslashit( $upload_dir['url'] )  . $filename;
 
-	if ( file_put_contents( $file_path, $image_data ) === false ) return $remote_url;
+	// C1: WP_Filesystem statt file_put_contents
+	global $wp_filesystem;
+	if ( empty( $wp_filesystem ) ) {
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		WP_Filesystem();
+	}
+	if ( ! $wp_filesystem->put_contents( $file_path, $image_data, FS_CHMOD_FILE ) ) {
+		update_option( $cache_key, '__failed__', false );
+		return;
+	}
 
 	$attach_id = wp_insert_attachment( [
 		'guid'           => $file_url,
-		'post_mime_type' => $content_type,
-		'post_title'     => sanitize_file_name( $filename ),
+		'post_mime_type' => $real_mime,
+		'post_title'     => $filename,
 		'post_content'   => '',
 		'post_status'    => 'inherit',
 	], $file_path );
@@ -209,8 +257,8 @@ function fsw_cached_logo_url( $remote_url ) {
 	}
 
 	update_option( $cache_key, $file_url, false );
-	return $file_url;
 }
+add_action( 'fsw_download_logo', 'fsw_do_logo_download' );
 
 /**
  * Löscht alle gecachten Logos aus wp_options (fsw_logo_*-Einträge).
