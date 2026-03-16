@@ -140,6 +140,24 @@ function fsw_adjust_brightness( $hex, $amount ) {
 }
 
 /**
+ * Konvertiert eine Hex-Farbe in einen rgba()-String.
+ *
+ * @param  string $hex   Hex-Farbe (mit oder ohne #).
+ * @param  float  $alpha Alpha-Wert (0–1).
+ * @return string        rgba()-String, z.B. "rgba(41,22,111,0.07)".
+ */
+function fsw_hex_to_rgba( $hex, $alpha = 1.0 ) {
+	$hex = ltrim( $hex, '#' );
+	if ( strlen( $hex ) === 3 ) {
+		$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+	}
+	$r = hexdec( substr( $hex, 0, 2 ) );
+	$g = hexdec( substr( $hex, 2, 2 ) );
+	$b = hexdec( substr( $hex, 4, 2 ) );
+	return 'rgba(' . $r . ',' . $g . ',' . $b . ',' . $alpha . ')';
+}
+
+/**
  * Lädt ein externes Logo einmalig herunter und speichert es in der WordPress-Mediathek.
  * Verhindert externe fussball.de-Requests vom Browser des Besuchers.
  *
@@ -216,14 +234,14 @@ function fsw_crest( $name, $logo = '' ) {
 	if ( fsw_hl( $name ) ) {
 		$own = get_option( 'fsw_own_logo', '' );
 		if ( $own ) {
-			return '<img class="fsw-logo" src="' . esc_url( $own ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy">';
+			return '<img class="fsw-logo" src="' . esc_url( $own ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy" width="72" height="72">';
 		}
 	}
 
 	// API-Logo lokal gecacht
 	if ( $logo ) {
 		$logo = fsw_cached_logo_url( $logo );
-		return '<img class="fsw-logo" src="' . esc_url( $logo ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy">';
+		return '<img class="fsw-logo" src="' . esc_url( $logo ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy" width="72" height="72">';
 	}
 
 	// Text-Fallback mit Kreis

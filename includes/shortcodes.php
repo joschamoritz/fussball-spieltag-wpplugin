@@ -307,7 +307,7 @@ function fsw_form_sc( $atts ) {
 					<div class="fsw-fc-gl"></div>
 				</div>
 				<!-- SVG Verbindungslinie zwischen den Spielpunkten -->
-				<svg class="fsw-fc-svg" viewBox="0 0 <?php echo $count * 100; ?> 200" preserveAspectRatio="none">
+				<svg class="fsw-fc-svg" viewBox="0 0 <?php echo $count * 100; ?> 200" preserveAspectRatio="none" aria-hidden="true" focusable="false">
 					<?php
 					// Koordinaten berechnen: S = oben (y=0), U = mitte (y=100), N = unten (y=200)
 					$pts = [];
@@ -338,7 +338,7 @@ function fsw_form_sc( $atts ) {
 					?>
 					<div class="fsw-fc-point<?php echo $fr_cls; ?>" style="left:<?php echo $left; ?>%;top:<?php echo $top; ?>;">
 						<?php if ( ! empty( $dd['logo'] ) ) : ?>
-						<img src="<?php echo esc_url( $dd['logo'] ); ?>" alt="<?php echo $logo_alt; ?>" loading="lazy">
+						<img src="<?php echo esc_url( $dd['logo'] ); ?>" alt="<?php echo $logo_alt; ?>" loading="lazy" width="32" height="32">
 						<?php else : ?>
 						<span class="fsw-fc-fallback fsw-dot-<?php echo $dd['c']; ?>"></span>
 						<?php endif; ?>
@@ -438,7 +438,7 @@ function fsw_table_sc( $atts ) {
 				<td class="fsw-pos"><?php echo esc_html( $r['place'] ?? '' ); ?></td>
 				<td class="fsw-al fsw-tc">
 					<?php if ( $logo_url ) : ?>
-					<img class="fsw-tbl-logo" src="<?php echo esc_url( $logo_url ); ?>" alt="<?php echo esc_attr( 'Wappen ' . $nm ); ?>" loading="lazy">
+					<img class="fsw-tbl-logo" src="<?php echo esc_url( $logo_url ); ?>" alt="<?php echo esc_attr( 'Wappen ' . $nm ); ?>" loading="lazy" width="22" height="22">
 					<?php endif; ?>
 					<?php echo esc_html( $nm ); ?>
 				</td>
@@ -478,10 +478,9 @@ function fsw_spieltag_tabs_sc( $atts ) {
 	) );
 	if ( empty( $teams ) ) return fsw_err( 'Keine Mannschaften konfiguriert. Einstellungen → Spieltag Widget.' );
 
-	$uid = 'fsw' . wp_rand( 1000, 9999 );
 	ob_start();
 	?>
-	<div class="fsw-w fsw-home" id="<?php echo $uid; ?>">
+	<div class="fsw-w fsw-home">
 		<div class="fsw-tabs">
 			<?php foreach ( $teams as $i => $t ) : ?>
 			<button class="fsw-tab<?php echo $i === 0 ? ' fsw-active' : ''; ?>" data-i="<?php echo $i; ?>"><?php echo esc_html( $t['name'] ); ?></button>
@@ -494,7 +493,6 @@ function fsw_spieltag_tabs_sc( $atts ) {
 		</div>
 		<?php endforeach; ?>
 	</div>
-	<script>!function(){var w=document.getElementById('<?php echo $uid; ?>');if(!w)return;w.querySelectorAll('.fsw-tab[data-i]').forEach(function(b){b.onclick=function(){w.querySelectorAll('.fsw-tab[data-i]').forEach(function(t){t.classList.remove('fsw-active')});w.querySelectorAll('.fsw-panel').forEach(function(p){p.classList.remove('fsw-show')});b.classList.add('fsw-active');var p=w.querySelector('.fsw-panel[data-i="'+b.dataset.i+'"]');if(p)p.classList.add('fsw-show')}})}()</script>
 	<?php
 	return ob_get_clean();
 }

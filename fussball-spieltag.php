@@ -53,30 +53,32 @@ function fsw_activate() {
 	}
 }
 
-// Plugin-CSS laden
-add_action( 'wp_enqueue_scripts', function () {
-	wp_enqueue_style( 'fsw-spieltag', FSW_URL . 'assets/style.css', [], FSW_VERSION );
-} );
-
 /**
- * Dynamische Farben als <style>-Block im <head> ausgeben.
- * Überschreibt die CSS-Variablen-Defaults aus style.css mit den Admin-Einstellungen.
+ * CSS, dynamische Farben, Fonts und Tab-Script einbinden.
  */
-add_action( 'wp_head', function () {
+add_action( 'wp_enqueue_scripts', function () {
+	// Haupt-Stylesheet
+	wp_enqueue_style( 'fsw-spieltag', FSW_URL . 'assets/style.css', [], FSW_VERSION );
+
+	// Dynamische Farben als Inline-Style direkt nach dem Stylesheet (kein separater wp_head-Block)
 	$primary = sanitize_hex_color( get_option( 'fsw_color_primary', '#29166f' ) ) ?: '#29166f';
 	$accent  = sanitize_hex_color( get_option( 'fsw_color_accent',  '#d4a843' ) ) ?: '#d4a843';
 	$dark    = fsw_adjust_brightness( $primary, -30 );
 	$light   = fsw_adjust_brightness( $primary, 30 );
-	echo '<style>:root{'
-		. '--fsw-primary:' . esc_attr( $primary ) . ';'
-		. '--fsw-dark:'    . esc_attr( $dark )    . ';'
-		. '--fsw-light:'   . esc_attr( $light )   . ';'
-		. '--fsw-accent:'  . esc_attr( $accent )  . ';'
-		. "}</style>\n";
-} );
+	$faint   = fsw_hex_to_rgba( $primary, 0.07 );
+	$faint2  = fsw_hex_to_rgba( $primary, 0.08 );
+	wp_add_inline_style( 'fsw-spieltag',
+		':root{'
+		. '--fsw-primary:'        . esc_attr( $primary ) . ';'
+		. '--fsw-dark:'           . esc_attr( $dark )    . ';'
+		. '--fsw-light:'          . esc_attr( $light )   . ';'
+		. '--fsw-accent:'         . esc_attr( $accent )  . ';'
+		. '--fsw-primary-faint:'  . $faint               . ';'
+		. '--fsw-primary-faint2:' . $faint2              . ';'
+		. '}'
+	);
 
-// Google Fonts – optional (Standard: an)
-add_action( 'wp_enqueue_scripts', function () {
+	// Google Fonts – optional (Standard: an)
 	if ( get_option( 'fsw_load_fonts', '1' ) !== '0' ) {
 		wp_enqueue_style(
 			'fsw-fonts',
@@ -85,4 +87,15 @@ add_action( 'wp_enqueue_scripts', function () {
 			null
 		);
 	}
+
+	// Tab-Widget-Script (extern, cachebar, mit Arrow-Key-Support)
+	wp_enqueue_script( 'fsw-tabs', FSW_URL . 'assets/tabs.js', [], FSW_VERSION, true );
 } );
+
+// Preconnect für Google Fonts – DNS-Lookup und TLS-Handshake vorziehen (spart 100–300ms)
+add_action( 'wp_head', function () {
+	if ( get_option( 'fsw_load_fonts', '1' ) !== '0' ) {
+		echo '<link rel="preconnect" href="https://fonts.googleapis.com">' . "\n";
+		echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' . "\n";
+	}
+}, 1 );

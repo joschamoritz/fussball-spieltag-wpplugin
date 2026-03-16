@@ -69,7 +69,7 @@ add_action( 'admin_init', function () {
 
 	add_settings_field( 'fsw_api_token', 'API-Token', function () {
 		$v = get_option( 'fsw_api_token', '' );
-		echo '<input type="text" name="fsw_api_token" value="' . esc_attr( $v ) . '" class="regular-text" autocomplete="off">';
+		echo '<input type="password" name="fsw_api_token" value="' . esc_attr( $v ) . '" class="regular-text" autocomplete="off">';
 		echo '<p class="description">Kostenlosen Token registrieren: '
 			. '<a href="https://api-fussball.de/token" target="_blank">api-fussball.de/token</a>. '
 			. 'Ohne Token werden keine Daten angezeigt.</p>';
