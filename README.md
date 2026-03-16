@@ -42,7 +42,9 @@ Ein WordPress-Plugin für Fußballvereine, die ihre Spieltagsdaten von **fussbal
 
 ### Schritt 1: API-Token besorgen
 
-1. Auf [api-fussball.de/token](https://api-fussball.de/token) registrieren
+Das Plugin nutzt die inoffizielle [api-fussball.de](https://api-fussball.de) – ein Open-Source-Projekt auf GitHub ([API-Repo](https://github.com/api-fussball/api-dart) · [Dokumentation](https://github.com/api-fussball/docs)).
+
+1. Auf [api-fussball.de/token](https://api-fussball.de/token) registrieren (kostenlos)
 2. Den erhaltenen Token kopieren
 3. Im WordPress-Backend: **Einstellungen → Spieltag Widget**
 4. Token unter **API-Token** eintragen
@@ -173,7 +175,7 @@ Ihr könnt in den Plugin-Einstellungen unter **Vereinseinstellungen → Eigenes 
 ## FAQ
 
 **Was ist api-fussball.de?**
-Eine inoffizielle API, die Spieltag-Daten von fussball.de bereitstellt. Kein offizielles DFB-Produkt, aber für Amateurvereine gut geeignet.
+Eine inoffizielle API, die Spieltag-Daten von fussball.de bereitstellt. Kein offizielles DFB-Produkt, aber ein aktiv gepflegtes Open-Source-Projekt – gut geeignet für Amateurvereine. Quellcode und Dokumentation: [github.com/api-fussball](https://github.com/api-fussball).
 
 **Kostet der API-Token etwas?**
 Nein, die Registrierung und Nutzung ist kostenlos (Stand: 2025). Bitte die aktuellen Konditionen auf [api-fussball.de](https://api-fussball.de) prüfen.
