@@ -174,7 +174,7 @@ function fsw_settings_page() {
 		<thead><tr><th style="width:420px">Shortcode</th><th>Beschreibung</th></tr></thead>
 		<tbody>
 		<tr><td colspan="2" style="background:#f0f0f5;font-weight:600">Startseite</td></tr>
-		<tr><td><code>[fsw_spieltag_tabs]</code></td><td>Tabs: alle Mannschaften + Jugend-Button</td></tr>
+		<tr><td><code>[fsw_spieltag_tabs]</code></td><td>Tabs: alle Mannschaften (als „Startseite" markiert)</td></tr>
 		<tr><td><code>[fsw_banner_datum]</code></td><td>Nur Text: Datum + Uhrzeit nächstes Spiel</td></tr>
 		<tr><td><code>[fsw_banner_liga]</code></td><td>Nur Text: Liga-Name</td></tr>
 		<tr><td colspan="2" style="background:#f0f0f5;font-weight:600">Kombiniert (Box-Variante)</td></tr>

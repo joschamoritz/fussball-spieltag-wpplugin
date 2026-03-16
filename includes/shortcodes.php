@@ -142,7 +142,9 @@ add_shortcode( 'fsw_naechstes_spiel', 'fsw_next_sc' );
  */
 function fsw_last_sc( $atts ) {
 	$atts = shortcode_atts( [ 'team' => '', 'style' => '' ], $atts );
-	$d    = fsw_api( '/team/prev_games/' . fsw_tid( $atts['team'] ) );
+	$tid  = fsw_tid( $atts['team'] );
+	if ( ! $tid ) return '';
+	$d    = fsw_api( '/team/prev_games/' . $tid );
 	if ( is_wp_error( $d ) ) return '';
 
 	// Nur Spiele mit Score (abgeschlossene Spiele)
@@ -206,7 +208,9 @@ add_shortcode( 'fsw_letztes_ergebnis', 'fsw_last_sc' );
  */
 function fsw_form_sc( $atts ) {
 	$atts   = shortcode_atts( [ 'team' => '', 'anzahl' => 5, 'style' => '' ], $atts );
-	$d      = fsw_api( '/team/prev_games/' . fsw_tid( $atts['team'] ) );
+	$tid    = fsw_tid( $atts['team'] );
+	if ( ! $tid ) return '';
+	$d      = fsw_api( '/team/prev_games/' . $tid );
 	if ( is_wp_error( $d ) ) return '';
 	$gs     = fsw_data( $d );
 	if ( empty( $gs ) ) return '';
@@ -470,11 +474,10 @@ add_shortcode( 'fsw_tabelle', 'fsw_table_sc' );
 /**
  * Zeigt alle Mannschaften als Tab-Widget (Nächstes Spiel + Formkurve + Tabelle je Tab).
  *
- * @param  array $atts Shortcode-Attribute: jugend_url.
+ * @param  array $atts Shortcode-Attribute: (keine).
  * @return string      HTML.
  */
 function fsw_spieltag_tabs_sc( $atts ) {
-	$atts  = shortcode_atts( [ 'jugend_url' => '/junioren/' ], $atts );
 	$teams = array_values( array_filter(
 		get_option( 'fsw_team_ids', [] ),
 		function ( $t ) { return ! empty( $t['show'] ) && ! empty( $t['id'] ); }
@@ -488,7 +491,6 @@ function fsw_spieltag_tabs_sc( $atts ) {
 			<?php foreach ( $teams as $i => $t ) : ?>
 			<button class="fsw-tab<?php echo $i === 0 ? ' fsw-active' : ''; ?>" data-i="<?php echo $i; ?>"><?php echo esc_html( $t['name'] ); ?></button>
 			<?php endforeach; ?>
-			<a class="fsw-tab fsw-tab-link" href="<?php echo esc_url( $atts['jugend_url'] ); ?>">Jugend&nbsp;→</a>
 		</div>
 		<?php foreach ( $teams as $i => $t ) : ?>
 		<div class="fsw-panel<?php echo $i === 0 ? ' fsw-show' : ''; ?>" data-i="<?php echo $i; ?>">
@@ -606,7 +608,9 @@ add_shortcode( 'fsw_spielplan', 'fsw_sched_sc' );
  */
 function fsw_banner_datum_sc( $atts ) {
 	$atts = shortcode_atts( [ 'team' => '' ], $atts );
-	$d    = fsw_api( '/team/next_games/' . fsw_tid( $atts['team'] ) );
+	$tid  = fsw_tid( $atts['team'] );
+	if ( ! $tid ) return '';
+	$d    = fsw_api( '/team/next_games/' . $tid );
 	if ( is_wp_error( $d ) ) return '';
 	$gs = fsw_data( $d );
 	if ( empty( $gs ) ) return '';
@@ -625,7 +629,9 @@ add_shortcode( 'fsw_banner_datum', 'fsw_banner_datum_sc' );
  */
 function fsw_banner_liga_sc( $atts ) {
 	$atts = shortcode_atts( [ 'team' => '' ], $atts );
-	$d    = fsw_api( '/team/next_games/' . fsw_tid( $atts['team'] ) );
+	$tid  = fsw_tid( $atts['team'] );
+	if ( ! $tid ) return '';
+	$d    = fsw_api( '/team/next_games/' . $tid );
 	if ( is_wp_error( $d ) ) return '';
 	$gs = fsw_data( $d );
 	if ( empty( $gs ) ) return '';
