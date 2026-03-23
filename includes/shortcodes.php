@@ -40,6 +40,7 @@ function fsw_render_match( $opts ) {
 	$hl           = $opts['home_logo']     ?? '';
 	$al           = $opts['away_logo']     ?? '';
 	$center       = $opts['center'];
+	$center_label = $opts['center_label']  ?? '';
 	$meta         = $opts['meta']          ?? '';
 	$center_class = $opts['center_class']  ?? '';
 	$is_box       = $opts['is_box']        ?? false;
@@ -62,7 +63,7 @@ function fsw_render_match( $opts ) {
 				<div class="fsw-tn"><?php echo esc_html( $hm ); ?></div>
 			</div>
 			<div class="fsw-mid">
-				<div class="fsw-center <?php echo esc_attr( $center_class ); ?>"><?php echo esc_html( $center ); ?></div>
+				<div class="fsw-center <?php echo esc_attr( $center_class ); ?>"<?php echo $center_label ? ' aria-label="' . esc_attr( $center_label ) . '"' : ''; ?>><?php echo esc_html( $center ); ?></div>
 			</div>
 			<div class="fsw-t<?php echo fsw_hl( $aw ) ? ' fsw-hl' : ''; ?>">
 				<div class="fsw-crest"><?php echo fsw_crest( $aw, $al ); ?></div>
@@ -108,7 +109,7 @@ function fsw_next_sc( $atts ) {
 	$meta = '';
 	if ( ! $is_box ) {
 		$parts = [];
-		if ( $dt['wdl'] ) $parts[] = $dt['wdl'] . ', ' . $dt['d'] . ( $dt['ts'] ? date( 'Y', $dt['ts'] ) : '' );
+		if ( $dt['wdl'] ) $parts[] = $dt['wdl'] . ', ' . $dt['d'] . ( $dt['ts'] ? wp_date( 'Y', $dt['ts'] ) : '' );
 		if ( $lg ) $parts[]        = $lg;
 		$meta = implode( ' · ', $parts );
 	}
@@ -119,6 +120,7 @@ function fsw_next_sc( $atts ) {
 		'home_logo'    => $g['homeLogo'] ?? '',
 		'away_logo'    => $g['awayLogo'] ?? '',
 		'center'       => $dt['t'],
+		'center_label' => 'Anstoß ' . $dt['t'] . ' Uhr',
 		'center_class' => 'fsw-kick',
 		'meta'         => $meta,
 		'is_box'       => $is_box,
@@ -174,7 +176,7 @@ function fsw_last_sc( $atts ) {
 	$meta   = '';
 	if ( ! $is_box ) {
 		$parts = [];
-		if ( $dt['wdl'] ) $parts[] = $dt['wdl'] . ', ' . $dt['d'] . ( $dt['ts'] ? date( 'Y', $dt['ts'] ) : '' );
+		if ( $dt['wdl'] ) $parts[] = $dt['wdl'] . ', ' . $dt['d'] . ( $dt['ts'] ? wp_date( 'Y', $dt['ts'] ) : '' );
 		if ( $lg ) $parts[]        = $lg;
 		$meta = implode( ' · ', $parts );
 	}
@@ -185,6 +187,7 @@ function fsw_last_sc( $atts ) {
 		'home_logo'    => $g['homeLogo'] ?? '',
 		'away_logo'    => $g['awayLogo'] ?? '',
 		'center'       => $hg . ' : ' . $ag,
+		'center_label' => 'Ergebnis: ' . $hg . ' zu ' . $ag,
 		'center_class' => 'fsw-score fsw-score-' . $rc,
 		'meta'         => $meta,
 		'is_box'       => $is_box,
@@ -300,6 +303,15 @@ function fsw_form_sc( $atts ) {
 	?>
 	<div class="fsw-formchart">
 		<?php echo fsw_section_title( 'Die letzten Spiele' ); ?>
+		<?php
+		// Screen-Reader-Text: Formkurve als lesbare Zusammenfassung
+		$sr_parts = [];
+		foreach ( $dots as $dd ) {
+			$r_txt      = $dd['r'] === 'S' ? 'Sieg' : ( $dd['r'] === 'U' ? 'Unentschieden' : 'Niederlage' );
+			$sr_parts[] = $dd['d'] . ' ' . $r_txt . ' ' . $dd['s'] . ' gegen ' . $dd['v'];
+		}
+		?>
+		<p class="screen-reader-text"><?php echo esc_html( 'Formkurve: ' . implode( ', ', $sr_parts ) ); ?></p>
 		<div class="fsw-fc-graph">
 			<div class="fsw-fc-y">
 				<span>S</span><span>U</span><span>N</span>
@@ -314,11 +326,12 @@ function fsw_form_sc( $atts ) {
 				<!-- SVG Verbindungslinie zwischen den Spielpunkten -->
 				<svg class="fsw-fc-svg" viewBox="0 0 <?php echo $count * 100; ?> 200" preserveAspectRatio="none" aria-hidden="true" focusable="false">
 					<?php
-					// Koordinaten berechnen: S = oben (y=0), U = mitte (y=100), N = unten (y=200)
+					// Koordinaten berechnen: S = oben (y=10), U = mitte (y=100), N = unten (y=190)
+					// 5% Puffer verhindert, dass Logos am Rand abgeschnitten werden
 					$pts = [];
 					foreach ( $dots as $i => $dd ) {
 						$x    = $i * 100 + 50;
-						$y    = ( $dd['r'] === 'S' ) ? 0 : ( ( $dd['r'] === 'U' ) ? 100 : 200 );
+						$y    = ( $dd['r'] === 'S' ) ? 10 : ( ( $dd['r'] === 'U' ) ? 100 : 190 );
 						$pts[] = [ 'x' => $x, 'y' => $y, 'comp' => $dd['comp'] ];
 					}
 					// Linien segmentweise zeichnen: gestrichelt für Freundschaftsspiele
@@ -335,15 +348,15 @@ function fsw_form_sc( $atts ) {
 				<!-- Gegner-Logos als absolut positionierte Punkte -->
 				<div class="fsw-fc-points">
 					<?php foreach ( $dots as $i => $dd ) :
-						// Vertikale Position: S=0%, U=50%, N=100% passend zur space-between-Verteilung der Gridlinien
-						$top      = ( $dd['r'] === 'S' ) ? '0%' : ( ( $dd['r'] === 'U' ) ? '50%' : '100%' );
+						// Vertikale Position: S=5%, U=50%, N=95% – 5% Puffer verhindert Abschneiden am Rand
+						$top      = ( $dd['r'] === 'S' ) ? '5%' : ( ( $dd['r'] === 'U' ) ? '50%' : '95%' );
 						$left     = ( ( $i * 100 + 50 ) / ( $count * 100 ) ) * 100;
 						$fr_cls   = $dd['comp'] ? '' : ' fsw-fc-friendly';
 						$logo_alt = esc_attr( 'Wappen ' . $dd['v'] );
 					?>
 					<div class="fsw-fc-point<?php echo $fr_cls; ?>" style="left:<?php echo $left; ?>%;top:<?php echo $top; ?>;">
 						<?php if ( ! empty( $dd['logo'] ) ) : ?>
-						<img src="<?php echo esc_url( $dd['logo'] ); ?>" alt="<?php echo $logo_alt; ?>" loading="lazy" width="32" height="32">
+						<img src="<?php echo esc_url( $dd['logo'] ); ?>" alt="<?php echo $logo_alt; ?>" loading="lazy" decoding="async" width="32" height="32">
 						<?php else : ?>
 						<span class="fsw-fc-fallback fsw-dot-<?php echo $dd['c']; ?>"></span>
 						<?php endif; ?>
@@ -443,11 +456,13 @@ function fsw_table_sc( $atts ) {
 			?>
 			<tr<?php echo $is_own ? ' class="fsw-our"' : ''; ?>>
 				<td class="fsw-pos"><?php echo esc_html( $r['place'] ?? '' ); ?></td>
-				<td class="fsw-al fsw-tc">
-					<?php if ( $logo_url ) : ?>
-					<img class="fsw-tbl-logo" src="<?php echo esc_url( $logo_url ); ?>" alt="<?php echo esc_attr( 'Wappen ' . $nm ); ?>" loading="lazy" width="22" height="22">
-					<?php endif; ?>
-					<?php echo esc_html( $nm ); ?>
+				<td class="fsw-al">
+					<div class="fsw-tc">
+						<?php if ( $logo_url ) : ?>
+						<img class="fsw-tbl-logo" src="<?php echo esc_url( $logo_url ); ?>" alt="<?php echo esc_attr( 'Wappen ' . $nm ); ?>" loading="lazy" decoding="async" width="22" height="22">
+						<?php endif; ?>
+						<?php echo esc_html( $nm ); ?>
+					</div>
 				</td>
 				<td><?php echo esc_html( $r['games'] ?? '' ); ?></td>
 				<td><?php echo esc_html( $r['won'] ?? '' ); ?></td>
@@ -484,16 +499,33 @@ function fsw_spieltag_tabs_sc( $atts ) {
 	) );
 	if ( empty( $teams ) ) return fsw_err( 'Keine Mannschaften konfiguriert. Einstellungen → Spieltag Widget.' );
 
+	static $wid = 0;
+	$wid++;
+	$prefix = 'fsw-w' . $wid;
+
+	// Script nur laden wenn dieses Widget tatsächlich gerendert wird
+	wp_enqueue_script( 'fsw-tabs', FSW_URL . 'assets/tabs.js', [], FSW_VERSION, true );
+
 	ob_start();
 	?>
-	<div class="fsw-w fsw-home">
-		<div class="fsw-tabs">
+	<div class="fsw-w fsw-home" lang="de">
+		<div class="fsw-tabs" role="tablist" aria-label="Mannschaften">
 			<?php foreach ( $teams as $i => $t ) : ?>
-			<button class="fsw-tab<?php echo $i === 0 ? ' fsw-active' : ''; ?>" data-i="<?php echo $i; ?>"><?php echo esc_html( $t['name'] ); ?></button>
+			<button class="fsw-tab<?php echo $i === 0 ? ' fsw-active' : ''; ?>"
+			        role="tab"
+			        id="<?php echo esc_attr( $prefix . '-tab-' . $i ); ?>"
+			        aria-selected="<?php echo $i === 0 ? 'true' : 'false'; ?>"
+			        aria-controls="<?php echo esc_attr( $prefix . '-panel-' . $i ); ?>"
+			        tabindex="<?php echo $i === 0 ? '0' : '-1'; ?>"
+			        data-i="<?php echo $i; ?>"><?php echo esc_html( $t['name'] ); ?></button>
 			<?php endforeach; ?>
 		</div>
 		<?php foreach ( $teams as $i => $t ) : ?>
-		<div class="fsw-panel<?php echo $i === 0 ? ' fsw-show' : ''; ?>" data-i="<?php echo $i; ?>">
+		<div class="fsw-panel<?php echo $i === 0 ? ' fsw-show' : ''; ?>"
+		     role="tabpanel"
+		     id="<?php echo esc_attr( $prefix . '-panel-' . $i ); ?>"
+		     aria-labelledby="<?php echo esc_attr( $prefix . '-tab-' . $i ); ?>"
+		     data-i="<?php echo $i; ?>">
 			<?php echo fsw_spieltag_sc( [ 'team' => $t['id'] ] ); ?>
 		</div>
 		<?php endforeach; ?>
@@ -564,6 +596,7 @@ function fsw_sched_sc( $atts ) {
 	?>
 	<div class="fsw-w fsw-sched">
 		<div class="fsw-hdr"><span class="fsw-badge"><?php echo esc_html( $badge ); ?></span></div>
+		<ul class="fsw-sr-list">
 		<?php foreach ( $gs as $g ) :
 			$hm    = $g['homeTeam'] ?? '—';
 			$aw    = $g['awayTeam'] ?? '—';
@@ -573,7 +606,7 @@ function fsw_sched_sc( $atts ) {
 			$svh_n = fsw_hl( $hm ) ? $hm : ( fsw_hl( $aw ) ? $aw : '' );
 			$label = fsw_team_label_for_game( $svh_n );
 		?>
-		<div class="fsw-sr">
+		<li class="fsw-sr">
 			<div class="fsw-sd">
 				<span class="fsw-swd"><?php echo esc_html( $dt['wd'] ); ?></span>
 				<span class="fsw-sdd"><?php echo esc_html( $dt['d'] ); ?></span>
@@ -587,8 +620,9 @@ function fsw_sched_sc( $atts ) {
 				<?php endif; ?>
 			</div>
 			<?php if ( $lg ) : ?><div class="fsw-slg"><?php echo esc_html( $lg ); ?></div><?php endif; ?>
-		</div>
+		</li>
 		<?php endforeach; ?>
+		</ul>
 	</div>
 	<?php
 	return ob_get_clean();

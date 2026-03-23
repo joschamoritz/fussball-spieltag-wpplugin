@@ -5,6 +5,35 @@ Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.0.0
 
 ---
 
+## [5.3.0] – 2026-03-23
+
+### Accessibility
+- **[C1] ARIA-Tab-Pattern**: Tab-Widget hat jetzt vollständiges WAI-ARIA-Pattern (`role="tablist"`, `role="tab"`, `aria-selected`, `aria-controls`, `tabindex`, `role="tabpanel"`, `aria-labelledby`)
+- **[C2] `role="alert"`**: Fehlermeldungen werden per `role="alert" aria-live="assertive"` von Screenreadern sofort vorgelesen
+- **[I5] Formkurve Screenreader**: Unsichtbare Textzusammenfassung (`screen-reader-text`) der Formkurven-Ergebnisse für Screenreader
+- **[I6] Score aria-label**: Score-Anzeige und Anstoßzeit haben beschreibendes `aria-label` (z.B. „Ergebnis: 2 zu 1", „Anstoß 15:00 Uhr")
+- **[I4] Kontrast erhöht**: Opacity inaktiver Tabs und Labels von 0.55 auf 0.70 angehoben (WCAG AA)
+- **[3.3] prefers-reduced-motion**: Animationen (Dots, Tabs) werden bei Systemeinstellung deaktiviert
+- **[I2] Spielplan semantisch**: `<div class="fsw-sr">` → `<ul class="fsw-sr-list"><li>` für korrekte Listen-Semantik
+
+### Korrektheit
+- **[I1] WordPress-Zeitzone**: `date()` → `wp_date()` in allen Datum-/Zeit-Ausgaben – respektiert jetzt die in WP konfigurierte Zeitzone
+- **[C3] Formkurve Logo-Clipping**: S/N-Punkte auf 5%/95% gesetzt statt 0%/100% – verhindert Abschneiden am Rand
+
+### HTML-Standards
+- **[C4] `display:flex` auf `<td>`**: Team-Zelle in der Tabelle enthält jetzt ein inneres `<div class="fsw-tc">` statt `flex` direkt auf `<td>` (Firefox-Kompatibilität)
+
+### Performance
+- **[I3] tabs.js bedingt laden**: Tab-Script wird nur noch auf Seiten eingebunden, die `[fsw_spieltag_tabs]` verwenden
+- **[3.5] Eigenes Logo priorisiert**: Vereinslogo lädt mit `loading="eager" fetchpriority="high"` (LCP-Verbesserung)
+- **[3.4] `decoding="async"`**: Alle Gegner-Logos und Tabellen-Logos entlasten den Haupt-Thread
+
+### CSS
+- **[3.2] `transition: all` entfernt**: Spezifische Properties statt `all` in Tab-Transitions
+- **[3.7] `lang="de"`**: Tab-Widget-Container hat `lang="de"` für korrekte Screenreader-Aussprache
+
+---
+
 ## [5.2.0] – 2026-03-16
 
 ### Sicherheit

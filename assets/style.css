@@ -81,7 +81,7 @@
 }
 .fsw-league, .fsw-sm {
 	font-size: 11px;
-	opacity: .55;
+	opacity: .70;
 }
 
 
@@ -465,7 +465,7 @@
 .fsw-tab {
 	background: 0 0;
 	border: none;
-	color: rgba(255,255,255,.55);
+	color: rgba(255,255,255,.70);
 	font-family: "Oswald", sans-serif;
 	font-weight: 500;
 	font-size: 13px;
@@ -473,7 +473,7 @@
 	letter-spacing: 1px;
 	padding: 12px 18px;
 	cursor: pointer;
-	transition: all .2s;
+	transition: color .2s, background-color .2s, border-color .2s;
 	white-space: nowrap;
 	text-decoration: none;
 	border-bottom: 2px solid transparent;
@@ -501,6 +501,11 @@
 	border-radius: 12px;
 	border: 1px solid var(--fsw-brd);
 	overflow: hidden;
+}
+.fsw-sr-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
 }
 .fsw-sr {
 	display: flex;
@@ -603,5 +608,15 @@
 	.fsw-tbl th:nth-child(7), .fsw-tbl td:nth-child(7),  /* Tore */
 	.fsw-tbl th:nth-child(8), .fsw-tbl td:nth-child(8) { /* Diff. */
 		display: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fsw-dot,
+	.fsw-tab {
+		transition: none;
+	}
+	.fsw-dot:hover {
+		transform: none;
 	}
 }

@@ -9,7 +9,10 @@
 
 		function activate( idx, moveFocus ) {
 			tabs.forEach( function ( tab, i ) {
-				tab.classList.toggle( 'fsw-active', i === idx );
+				var isActive = ( i === idx );
+				tab.classList.toggle( 'fsw-active', isActive );
+				tab.setAttribute( 'aria-selected', isActive ? 'true' : 'false' );
+				tab.setAttribute( 'tabindex', isActive ? '0' : '-1' );
 			} );
 			panels.forEach( function ( panel ) {
 				panel.classList.toggle( 'fsw-show', parseInt( panel.dataset.i, 10 ) === idx );

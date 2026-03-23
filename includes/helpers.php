@@ -75,14 +75,14 @@ function fsw_dt( $date_str, $time_str = '' ) {
 
 	$ws   = [ 'So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa' ];
 	$wl   = [ 'Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag' ];
-	$widx = (int) date( 'w', $ts );
+	$widx = (int) wp_date( 'w', $ts );
 	return [
-		'd'   => date( 'd.m.', $ts ),
-		't'   => date( 'H:i', $ts ),
+		'd'   => wp_date( 'd.m.', $ts ),
+		't'   => wp_date( 'H:i', $ts ),
 		'wd'  => $ws[ $widx ],
 		'wdl' => $wl[ $widx ],
 		'ts'  => $ts,
-		'full' => $ws[ $widx ] . ', ' . date( 'd.m.Y', $ts ),
+		'full' => $ws[ $widx ] . ', ' . wp_date( 'd.m.Y', $ts ),
 	];
 }
 
@@ -118,7 +118,7 @@ function fsw_tid( $a = '' ) {
  * @return string    HTML.
  */
 function fsw_err( $m ) {
-	return '<div class="fsw-w fsw-err"><p>' . esc_html( $m ) . '</p></div>';
+	return '<div class="fsw-w fsw-err" role="alert" aria-live="assertive"><p>' . esc_html( $m ) . '</p></div>';
 }
 
 /**
@@ -284,18 +284,18 @@ function fsw_clear_logo_cache() {
 function fsw_crest( $name, $logo = '' ) {
 	$alt = 'Wappen ' . trim( $name );
 
-	// Eigenes Logo für den konfigurierten Verein
+	// Eigenes Logo für den konfigurierten Verein (prioritär laden – LCP-Element)
 	if ( fsw_hl( $name ) ) {
 		$own = get_option( 'fsw_own_logo', '' );
 		if ( $own ) {
-			return '<img class="fsw-logo" src="' . esc_url( $own ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy" width="72" height="72">';
+			return '<img class="fsw-logo" src="' . esc_url( $own ) . '" alt="' . esc_attr( $alt ) . '" loading="eager" fetchpriority="high" decoding="sync" width="72" height="72">';
 		}
 	}
 
 	// API-Logo lokal gecacht
 	if ( $logo ) {
 		$logo = fsw_cached_logo_url( $logo );
-		return '<img class="fsw-logo" src="' . esc_url( $logo ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy" width="72" height="72">';
+		return '<img class="fsw-logo" src="' . esc_url( $logo ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy" decoding="async" width="72" height="72">';
 	}
 
 	// Text-Fallback mit Kreis
