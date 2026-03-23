@@ -70,7 +70,16 @@ function fsw_dt( $date_str, $time_str = '' ) {
 		$o = DateTime::createFromFormat( $fmt, $combined );
 		if ( $o ) { $ts = $o->getTimestamp(); break; }
 	}
-	if ( ! $ts ) $ts = strtotime( $combined );
+	if ( ! $ts ) {
+		// Fallback mit WordPress-Zeitzone statt Server-Zeitzone
+		try {
+			$tz     = new DateTimeZone( wp_timezone_string() );
+			$dt_obj = new DateTime( $combined, $tz );
+			$ts     = $dt_obj ? $dt_obj->getTimestamp() : 0;
+		} catch ( Exception $e ) {
+			$ts = 0;
+		}
+	}
 	if ( ! $ts ) return [ 'd' => $date_str, 't' => $time_str ?: '', 'wd' => '', 'wdl' => '', 'ts' => 0, 'full' => $date_str ];
 
 	$ws   = [ 'So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa' ];
@@ -87,6 +96,28 @@ function fsw_dt( $date_str, $time_str = '' ) {
 }
 
 /**
+ * Gibt den konfigurierten Vereinsnamen mit statischem Cache zurück.
+ *
+ * @return string
+ */
+function fsw_club_name_opt(): string {
+	static $v = null;
+	if ( null === $v ) $v = (string) get_option( 'fsw_club_name', '' );
+	return $v;
+}
+
+/**
+ * Gibt das konfigurierte Team-Array mit statischem Cache zurück.
+ *
+ * @return array
+ */
+function fsw_team_ids_opt(): array {
+	static $v = null;
+	if ( null === $v ) $v = (array) get_option( 'fsw_team_ids', [] );
+	return $v;
+}
+
+/**
  * Prüft ob ein Teamname zum konfigurierten Verein gehört.
  * Der Suchbegriff wird in den Plugin-Einstellungen unter "Vereinsname" hinterlegt.
  *
@@ -94,7 +125,7 @@ function fsw_dt( $date_str, $time_str = '' ) {
  * @return bool
  */
 function fsw_hl( $n ) {
-	$club = get_option( 'fsw_club_name', '' );
+	$club = fsw_club_name_opt();
 	if ( ! $club ) return false;
 	return stripos( $n, $club ) !== false;
 }
@@ -107,7 +138,7 @@ function fsw_hl( $n ) {
  */
 function fsw_tid( $a = '' ) {
 	if ( $a ) return sanitize_text_field( $a );
-	$t = get_option( 'fsw_team_ids', [] );
+	$t = fsw_team_ids_opt();
 	return ! empty( $t[0]['id'] ) ? $t[0]['id'] : '';
 }
 
@@ -170,11 +201,13 @@ function fsw_hex_to_rgba( $hex, $alpha = 1.0 ) {
 function fsw_cached_logo_url( $remote_url ) {
 	if ( empty( $remote_url ) ) return '';
 	$cache_key = 'fsw_logo_' . md5( $remote_url );
-	$local_url = get_option( $cache_key );
-	if ( $local_url ) {
-		// '__failed__' = vorheriger Download fehlgeschlagen → Remote-URL als Fallback
-		if ( '__failed__' === $local_url ) return $remote_url;
-		return $local_url;
+	$local     = get_option( $cache_key );
+	if ( $local ) {
+		if ( '__failed__' === $local ) return $remote_url;
+		// Neues Format: Array mit 'url' und 'id'
+		if ( is_array( $local ) ) return $local['url'] ?? $remote_url;
+		// Altes Format (< v5.4.0): plain URL-String – Rückwärtskompatibilität
+		return $local;
 	}
 
 	// Noch kein gecachtes Logo → Download asynchron per WP-Cron einplanen
@@ -256,7 +289,11 @@ function fsw_do_logo_download( $remote_url ) {
 		wp_update_attachment_metadata( $attach_id, wp_generate_attachment_metadata( $attach_id, $file_path ) );
 	}
 
-	update_option( $cache_key, $file_url, false );
+	// Attachment-ID + URL gemeinsam speichern → zuverlässiges Löschen beim Deinstallieren
+	$store = is_wp_error( $attach_id )
+		? $file_url                                          // Fallback: nur URL (altes Verhalten)
+		: [ 'id' => $attach_id, 'url' => $file_url ];
+	update_option( $cache_key, $store, false );
 }
 add_action( 'fsw_download_logo', 'fsw_do_logo_download' );
 
@@ -355,7 +392,7 @@ function fsw_sort_prev_games( $games ) {
  */
 function fsw_team_label_for_game( $team_name ) {
 	if ( ! fsw_hl( $team_name ) ) return '';
-	$teams = get_option( 'fsw_team_ids', [] );
+	$teams = fsw_team_ids_opt();
 	foreach ( $teams as $t ) {
 		if ( empty( $t['id'] ) ) continue;
 		$label = $t['name'];

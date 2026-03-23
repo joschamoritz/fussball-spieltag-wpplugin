@@ -3,7 +3,7 @@
  * Plugin Name: Fussball Spieltag Widget
  * Plugin URI:  https://github.com/joschamoritz/fussball-spieltag-wpplugin
  * Description: Spieltag-Widget für Fußballvereine auf fussball.de – Nächstes Spiel, Formkurve, Tabelle, Spielplan und Banner-Texte als Shortcodes.
- * Version:     5.3.0
+ * Version:     5.4.0
  * Author:      joschamoritz
  * Author URI:  https://github.com/joschamoritz
  * License:     GPL-2.0-or-later
@@ -12,7 +12,7 @@
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'FSW_VERSION', '5.3.0' );
+define( 'FSW_VERSION', '5.4.0' );
 define( 'FSW_CACHE',   1800 );          // Cache-Dauer in Sekunden (30 Minuten)
 define( 'FSW_DIR',     plugin_dir_path( __FILE__ ) );
 define( 'FSW_URL',     plugin_dir_url( __FILE__ ) );
@@ -93,7 +93,7 @@ add_action( 'wp_enqueue_scripts', function () {
 // Preconnect für Google Fonts – DNS-Lookup und TLS-Handshake vorziehen (spart 100–300ms)
 add_action( 'wp_head', function () {
 	if ( get_option( 'fsw_load_fonts', '1' ) !== '0' ) {
-		echo '<link rel="preconnect" href="https://fonts.googleapis.com">' . "\n";
-		echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' . "\n";
+		echo '<link rel="preconnect" href="' . esc_url( 'https://fonts.googleapis.com' ) . '" crossorigin>' . "\n";
+		echo '<link rel="preconnect" href="' . esc_url( 'https://fonts.gstatic.com' ) . '" crossorigin>' . "\n";
 	}
 }, 1 );

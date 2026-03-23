@@ -72,6 +72,16 @@ function fsw_api( $ep ) {
  * @return int|false Anzahl gelöschter Zeilen oder false bei Fehler.
  */
 function fsw_clear_cache() {
+	// Nur im Admin-Kontext oder wenn über einen update_option_*-Hook ausgelöst
+	$via_hook = (
+		doing_action( 'update_option_fsw_team_ids' ) ||
+		doing_action( 'update_option_fsw_club_id' )  ||
+		doing_action( 'update_option_fsw_api_token' )
+	);
+	if ( ! $via_hook && ! current_user_can( 'manage_options' ) ) {
+		return false;
+	}
+
 	global $wpdb;
 	$like1 = $wpdb->esc_like( '_transient_fsw_' )         . '%';
 	$like2 = $wpdb->esc_like( '_transient_timeout_fsw_' ) . '%';

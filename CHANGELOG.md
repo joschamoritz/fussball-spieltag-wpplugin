@@ -5,6 +5,25 @@ Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.0.0
 
 ---
 
+## [5.4.0] – 2026-03-23
+
+### Sicherheit & Korrektheit
+- **Preconnect-Links** mit `esc_url()` escaped (WordPress Coding Standard)
+- **`fsw_clear_cache()`** prüft jetzt Kontext: nur im Admin oder via `update_option_*`-Hook aufrufbar
+- **Checkbox-Bug `fsw_load_fonts`**: Hidden-Input davor verhindert, dass Google Fonts nicht deaktiviert werden können
+- **`fsw_load_fonts` Sanitization**: Erzwingt exakt `'1'` oder `'0'` statt beliebigem String
+
+### Performance
+- **Statisches Option-Caching**: `fsw_club_name_opt()` und `fsw_team_ids_opt()` vermeiden mehrfache `get_option()`-Aufrufe pro Request
+- **Logo-Attachment-ID gespeichert**: `fsw_do_logo_download()` speichert `['id' => ..., 'url' => ...]` statt nur der URL – zuverlässigeres Löschen beim Deinstallieren
+
+### Stabilität
+- **Timezone-Fallback in `fsw_dt()`**: `strtotime()` ersetzt durch `DateTime` mit WordPress-Zeitzone
+- **Post/Redirect/Get**: Cache-Leerung leitet nach Ausführung weiter – verhindert Doppelausführung bei Browser-Reload
+- **Uninstall**: Versteht beide Logo-Formate (alt: URL-String, neu: Array mit ID)
+
+---
+
 ## [5.3.0] – 2026-03-23
 
 ### Accessibility

@@ -115,7 +115,10 @@ add_action( 'admin_init', function () {
 	/* ── Darstellung ──────────────────────────────────────── */
 	register_setting( 'fsw_st', 'fsw_color_primary', [ 'sanitize_callback' => 'sanitize_hex_color', 'default' => '#29166f' ] );
 	register_setting( 'fsw_st', 'fsw_color_accent',  [ 'sanitize_callback' => 'sanitize_hex_color', 'default' => '#d4a843' ] );
-	register_setting( 'fsw_st', 'fsw_load_fonts',    [ 'sanitize_callback' => 'sanitize_text_field', 'default' => '1' ] );
+	register_setting( 'fsw_st', 'fsw_load_fonts', [
+		'sanitize_callback' => function ( $v ) { return '1' === $v ? '1' : '0'; },
+		'default'           => '1',
+	] );
 
 	add_settings_section( 'fsw_design', 'Darstellung', null, 'fsw-spieltag' );
 
@@ -134,6 +137,8 @@ add_action( 'admin_init', function () {
 
 	add_settings_field( 'fsw_load_fonts', 'Google Fonts laden', function () {
 		$v = get_option( 'fsw_load_fonts', '1' );
+		// Hidden-Input als Fallback: deaktivierte Checkbox sendet keinen POST-Parameter
+		echo '<input type="hidden" name="fsw_load_fonts" value="0">';
 		echo '<label><input type="checkbox" name="fsw_load_fonts" value="1" ' . checked( $v, '1', false ) . '> '
 			. 'Oswald &amp; Source Sans 3 von Google Fonts laden</label>';
 		echo '<p class="description">Deaktivieren wenn euer Theme diese oder ähnliche Schriften bereits lädt – '
@@ -145,13 +150,15 @@ add_action( 'admin_init', function () {
  * Rendert die Admin-Einstellungsseite.
  */
 function fsw_settings_page() {
-	// Cache leeren (mit Nonce-Schutz gegen CSRF) – I7: eigener Nonce-Parameter
+	// Cache leeren (mit Nonce-Schutz gegen CSRF) – Post/Redirect/Get verhindert Doppelausführung
 	if ( isset( $_GET['fsw_clear'] ) && current_user_can( 'manage_options' ) ) {
 		if ( ! isset( $_GET['_fsw_nonce_clear'] ) || ! wp_verify_nonce( $_GET['_fsw_nonce_clear'], 'fsw_clear_cache' ) ) {
 			wp_die( 'Sicherheitsprüfung fehlgeschlagen.' );
 		}
 		fsw_clear_cache();
 		fsw_clear_logo_cache();
+		wp_safe_redirect( add_query_arg( [ 'page' => 'fsw-spieltag', 'fsw_cleared' => '1' ], admin_url( 'options-general.php' ) ) );
+		exit;
 	}
 
 	// Debug-Ansicht (mit Nonce-Schutz) – I7: eigener Nonce-Parameter
@@ -199,7 +206,7 @@ function fsw_settings_page() {
 	<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'fsw_clear', '1' ), 'fsw_clear_cache', '_fsw_nonce_clear' ) ); ?>" class="button">
 		Cache leeren (API + Logos)
 	</a>
-	<?php if ( isset( $_GET['fsw_clear'] ) ) : ?>
+	<?php if ( isset( $_GET['fsw_cleared'] ) ) : ?>
 		<span style="color:green;margin-left:8px">✓ API-Cache + Logo-Cache geleert</span>
 	<?php endif; ?>
 	&nbsp;

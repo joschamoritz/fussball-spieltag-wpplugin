@@ -40,17 +40,27 @@ $wpdb->query(
 
 // ── Logo-Mediathek-Anhänge löschen (wp_posts attachment-Einträge + Dateien) ─
 // I4: Beim Deinstallieren auch die Mediathek-Anhänge und physischen Dateien entfernen
-$like3   = $wpdb->esc_like( 'fsw_logo_' ) . '%';
-$logo_urls = $wpdb->get_col(
+$like3       = $wpdb->esc_like( 'fsw_logo_' ) . '%';
+$logo_values = $wpdb->get_col(
 	$wpdb->prepare(
 		"SELECT option_value FROM {$wpdb->options} WHERE option_name LIKE %s AND option_value NOT IN ('__failed__')",
 		$like3
 	)
 );
-if ( $logo_urls ) {
+if ( $logo_values ) {
 	require_once ABSPATH . 'wp-admin/includes/image.php';
-	foreach ( $logo_urls as $url ) {
-		$attach_id = attachment_url_to_postid( $url );
+	foreach ( $logo_values as $raw ) {
+		$data      = maybe_unserialize( $raw );
+		$attach_id = 0;
+
+		if ( is_array( $data ) && ! empty( $data['id'] ) ) {
+			// Neues Format (>= v5.4.0): Attachment-ID direkt verfügbar
+			$attach_id = (int) $data['id'];
+		} elseif ( is_string( $data ) && ! empty( $data ) ) {
+			// Altes Format (< v5.4.0): nur URL gespeichert → ID über URL ermitteln
+			$attach_id = (int) attachment_url_to_postid( $data );
+		}
+
 		if ( $attach_id ) {
 			wp_delete_attachment( $attach_id, true );   // true = physische Datei mitlöschen
 		}
